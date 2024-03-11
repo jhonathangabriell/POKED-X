@@ -14,7 +14,7 @@ public class HomeController : Controller
         _logger = logger;
     }
 
-    public IActionResult Details(int id)
+    public IActionResult Index()
     {
          List<Pokemon> pokemons = new ();
          using (StreamReader leitor = new("Data\\pokemons.json"))
@@ -29,10 +29,31 @@ public class HomeController : Controller
             tipos = JsonSerializer.Deserialize<List<Tipo>>(dados);
         }
          ViewData["Tipos"] = tipos;
-         var pokemon = pokemons
-            .Where(p => p.Numero == id)
-            .FirstOrDefault();
-         return View(pokemon);
+         return View(pokemons);
+    }
+
+    public IActionResult Details(int id)
+    {
+         List<Pokemon> pokemons = new ();
+         using (StreamReader leitor = new("Data\\pokemons.json"))
+        {
+            string dados = leitor.ReadToEnd();
+            pokemons = JsonSerializer.Deserialize<List<Pokemon>>(dados);
+        }
+        List<Tipo> tipos = new List<Tipo>();
+        using (StreamReader leitor = new("Data\\tipos.json"))
+        {
+            string dados = leitor.ReadToEnd();
+            tipos = JsonSerializer.Deserialize<List<Tipo>>(dados);
+        }
+         DetailsVM details = new () 
+         {
+            Tipos = tipos,
+            Atual = pokemons.FirstOrDefault(p => p.Numero == id),
+            Anterior = pokemons.OrderByDescending(p => p.Numero).FirstOrDefault(p => p.Numero < id),
+            Proximo = pokemons.OrderBy(p => p.Numero).FirstOrDefault(p => p.Numero > id),
+         };
+         return View(details);
     }
 
     public IActionResult Privacy()
